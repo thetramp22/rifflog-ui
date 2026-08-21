@@ -1,10 +1,5 @@
 import StatisticCard from "./StatisticCard";
-
-type Statistic = {
-    id: number;
-    name: string;
-    value: string;
-}
+import { type Statistic } from "../../types/statistics";
 
 type StatisticsProps = {
     statistics: Statistic[];
@@ -19,7 +14,7 @@ function Statistics({ statistics }: StatisticsProps) {
             <div className="cards">
                 <ul>
                     {statistics.map((statistic) => (
-                        <StatisticCard key={statistic.id} name={statistic.name} value={statistic.value} />
+                        <StatisticCard key={statistic.name} name={statistic.name} value={statistic.value} />
                     ))}
                 </ul>
             </div>
