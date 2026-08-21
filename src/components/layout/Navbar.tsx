@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { useAuth } from '../../hooks/useAuth';
 
 function Navbar() {
     const navigationItems = [
@@ -6,6 +7,8 @@ function Navbar() {
         { id: 2, name: "Sessions", url: "/sessions" },
         { id: 3, name: "Login", url: "/login" }
     ];
+
+    const { user } = useAuth()
 
     return (
         <>
@@ -23,6 +26,9 @@ function Navbar() {
                             </li>
                         ))}
                     </ul>
+                </div>
+                <div>
+                    {user !== null ? <p>{user.email}</p> : <p>Not logged in</p>}
                 </div>
             </section>
         </>
