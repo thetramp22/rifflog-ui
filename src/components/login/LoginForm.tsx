@@ -1,10 +1,12 @@
 import React, { useState } from "react"
+import { useAuth } from "../../hooks/useAuth"
 
 function LoginForm() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
+    const { login } = useAuth()
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -12,24 +14,10 @@ function LoginForm() {
         setMessage('');
 
         try {
-            const response = await fetch('https://api.rifflog.scottstarks.dev/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            })
-
-            const data = await response.json()
-
-            if (response.ok) {
-                setMessage('Login successful!')
-                console.log('Success:', data)
-            } else {
-                setMessage(data.message || 'Authentication failed')
-            }
+            await login(email, password)
+            setMessage('Login successful!')
         } catch (error) {
-            setMessage('Network error. Please try again later.')
+            setMessage('Authentication failed')
             console.error('Error:', error)
         } finally {
             setLoading(false)
