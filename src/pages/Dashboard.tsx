@@ -3,6 +3,7 @@ import RecentSessions from "../components/sessions/RecentSessions"
 import { useAuth } from "../hooks/useAuth";
 import { type Statistic } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
+import { type Session } from "../types/sessions";
 
 type ApiMostPracticedSkill = {
     name: string;
@@ -16,6 +17,16 @@ type ApiStats = {
     longest_session: number;
 }
 
+type ApiSession = {
+    id: number;
+    skill_id: number;
+    skill_name: string;
+    duration_minutes: number;
+    notes: string;
+    practiced_at: string;
+    user_id: number;
+}
+
 type MostPracticedSkill = {
     name: string;
     totalMinutes: number;
@@ -27,6 +38,9 @@ type Stats = {
     mostPracticedSkill: MostPracticedSkill | null;
     longestSession: number;
 }
+
+const maxRecentSessions = 4
+
 
 function Dashboard() {
     const { token } = useAuth()
@@ -52,18 +66,38 @@ function Dashboard() {
             }
 
             const data = await response.json()
-            console.log(data)
             const stats: Stats = apiStatsToStats(data)
             setStats(stats)
         }
         getStats()
     }, [token])
 
-    const [sessions, setSessions] = useState([
-        { id: 1, date: "2026-08-01T14:00:00Z", duration: 35, skill: "Scales", notes: "Major scales practice" },
-        { id: 2, date: "2026-08-03T15:00:00Z", duration: 20, skill: "Chord Transitions", notes: "Simple Em-Am changes" },
-        { id: 3, date: "2026-08-04T14:30:00Z", duration: 45, skill: "Scales", notes: "Long minor scales session" },
-    ])
+    const [sessions, setSessions] = useState<Session[] | null>(null)
+    useEffect(() => {
+        if (token === null) {
+            return
+        }
+        const getSessions = async () => {
+            const config: RequestInit = {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            }
+            const response = await fetch('https://api.rifflog.scottstarks.dev/api/practice-sessions', config)
+
+            if (!response.ok) {
+                console.log("User is not Authorized")
+                return
+            }
+
+            const data = await response.json()
+            const sessions: Session[] = apiSessionsToRecentSessions(data)
+            setSessions(sessions)
+        }
+        getSessions()
+    }, [token])
 
     return (
         <main className="dashboard">
@@ -72,8 +106,7 @@ function Dashboard() {
                 <h2>Welcome, Scott</h2>
             </section>
             {stats !== null ? <Statistics statistics={statsToStatistics(stats)} /> : <p>loading statistics...</p>}
-
-            <RecentSessions sessions={sessions} />
+            {sessions !== null ? <RecentSessions sessions={sessions} /> : <p>loading recent sessions...</p>}
         </main>
     )
 }
@@ -114,6 +147,22 @@ function statsToStatistics(stats: Stats) {
             value: String(stats.longestSession) + " minutes"
         }
     ]
+    return result
+}
+
+function apiSessionsToRecentSessions(apiSessions: ApiSession[]) {
+    const recentApisessions = apiSessions.slice(0, maxRecentSessions)
+    const result: Session[] = []
+    for (const apiSession of recentApisessions) {
+        const session: Session = {
+            id: apiSession.id,
+            date: apiSession.practiced_at,
+            duration: apiSession.duration_minutes,
+            skill: apiSession.skill_name,
+            notes: apiSession.notes
+        }
+        result.push(session)
+    }
     return result
 }
 
