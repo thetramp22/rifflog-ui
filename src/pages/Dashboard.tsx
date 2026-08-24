@@ -4,12 +4,6 @@ import { useAuth } from "../hooks/useAuth";
 import { type Statistic } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
 
-type Skill = {
-    id: number;
-    name: string;
-    description: string;
-}
-
 type ApiMostPracticedSkill = {
     name: string;
     total_minutes: number;
@@ -36,16 +30,6 @@ type Stats = {
 
 function Dashboard() {
     const { token } = useAuth()
-
-    const [skills, setSkills] = useState<Skill[]>([])
-    useEffect(() => {
-        const getSkills = async () => {
-            const response = await fetch('https://api.rifflog.scottstarks.dev/skills')
-            const data = await response.json()
-            setSkills(data)
-        }
-        getSkills();
-    }, [])
 
     const [stats, setStats] = useState<Stats | null>(null)
     useEffect(() => {
@@ -90,17 +74,6 @@ function Dashboard() {
             {stats !== null ? <Statistics statistics={statsToStatistics(stats)} /> : <p>loading statistics...</p>}
 
             <RecentSessions sessions={sessions} />
-            <section>
-                <ul>
-                    {skills.map((skill) => (
-                        <li key={skill.id}>
-                            <p>id: {skill.id}</p>
-                            <p>name: {skill.name}</p>
-                            <p>description: {skill.description}</p>
-                        </li>
-                    ))}
-                </ul>
-            </section>
         </main>
     )
 }
