@@ -1,12 +1,5 @@
 import SessionCard from "./SessionCard";
-
-type Session = {
-    id: number;
-    date: string;
-    duration: number;
-    skill: string;
-    notes: string;
-}
+import { type Session } from "../../types/sessions"
 
 type SessionProps = {
     sessions: Session[];
