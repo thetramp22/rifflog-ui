@@ -8,7 +8,11 @@ function Navbar() {
         { id: 3, name: "Login", url: "/login" }
     ];
 
-    const { user } = useAuth()
+    const { user, logout } = useAuth()
+
+    const handleClick = () => {
+        logout()
+    }
 
     return (
         <>
@@ -28,7 +32,7 @@ function Navbar() {
                     </ul>
                 </div>
                 <div>
-                    {user !== null ? <p>{user.email}</p> : <p>Not logged in</p>}
+                    {user !== null ? <div><p>{user.email}</p><button onClick={handleClick}>Logout</button></div> : <p>Not logged in</p>}
                 </div>
             </section>
         </>
