@@ -18,7 +18,7 @@ type ApiStats = {
 }
 
 type ApiSession = {
-    id: number;
+    session_id: number;
     skill_id: number;
     skill_name: string;
     duration_minutes: number;
@@ -93,7 +93,9 @@ function Dashboard() {
             }
 
             const data = await response.json()
+            console.log(data)
             const sessions: Session[] = apiSessionsToRecentSessions(data)
+            console.log(sessions)
             setSessions(sessions)
         }
         getSessions()
@@ -155,7 +157,7 @@ function apiSessionsToRecentSessions(apiSessions: ApiSession[]) {
     const result: Session[] = []
     for (const apiSession of recentApisessions) {
         const session: Session = {
-            id: apiSession.id,
+            id: apiSession.session_id,
             date: apiSession.practiced_at,
             duration: apiSession.duration_minutes,
             skill: apiSession.skill_name,
