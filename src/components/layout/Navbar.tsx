@@ -2,13 +2,20 @@ import { Link } from 'react-router'
 import { useAuth } from '../../hooks/useAuth';
 
 function Navbar() {
-    const navigationItems = [
-        { id: 1, name: "Dashboard", url: "/dashboard" },
-        { id: 2, name: "Sessions", url: "/sessions" },
-        { id: 3, name: "Login", url: "/login" }
-    ];
-
     const { user, logout } = useAuth()
+
+    const authenticatedNavigationItems = [
+        { id: 1, name: "Home", url: "/" },
+        { id: 2, name: "Dashboard", url: "/dashboard" },
+        { id: 3, name: "Sessions", url: "/sessions" }
+    ]
+
+    const unauthenticatedNavigationItems = [
+        { id: 1, name: "Home", url: "/" },
+        { id: 2, name: "Login", url: "/login" }
+    ]
+
+    const navigationItems = user !== null ? authenticatedNavigationItems : unauthenticatedNavigationItems
 
     const handleClick = () => {
         logout()
