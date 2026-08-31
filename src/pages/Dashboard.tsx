@@ -3,7 +3,7 @@ import RecentSessions from "../components/sessions/RecentSessions"
 import { useAuth } from "../hooks/useAuth";
 import { type Statistic } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
-import { type Session } from "../types/sessions";
+import { type Session, type ApiSession } from "../types/sessions";
 
 type ApiMostPracticedSkill = {
     name: string;
@@ -15,16 +15,6 @@ type ApiStats = {
     total_sessions: number;
     most_practiced_skill: ApiMostPracticedSkill | null;
     longest_session: number;
-}
-
-type ApiSession = {
-    session_id: number;
-    skill_id: number;
-    skill_name: string;
-    duration_minutes: number;
-    notes: string;
-    practiced_at: string;
-    user_id: number;
 }
 
 type MostPracticedSkill = {
