@@ -1,17 +1,16 @@
+import type { Session } from "../../types/sessions"
+
 type SessionCardProps = {
-    date: string,
-    duration: number,
-    skill: string,
-    notes: string
+    session: Session
 }
 
-function SessionCard({ date, duration, skill, notes }: SessionCardProps) {
+function SessionCard({ session }: SessionCardProps) {
     return (
         <li className="session-card">
-            <p>Date: {new Date(date).toLocaleDateString()}</p>
-            <p>Duration: {duration}</p>
-            <p>Skill: {skill}</p>
-            <p>Notes: {notes}</p>
+            <p>Date: {new Date(session.date).toLocaleDateString()}</p>
+            <p>Duration: {session.duration}</p>
+            <p>Skill: {session.skill}</p>
+            <p>Notes: {session.notes}</p>
         </li>
     )
 }

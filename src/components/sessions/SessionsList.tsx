@@ -1,11 +1,11 @@
 import SessionCard from "./SessionCard";
 import { type Session } from "../../types/sessions"
 
-type SessionProps = {
+type SessionListProps = {
     sessions: Session[];
 }
 
-function SessionsList({ sessions }: SessionProps) {
+function SessionsList({ sessions }: SessionListProps) {
     return (
         <section className="sessions">
             <div className="cards">
@@ -13,10 +13,7 @@ function SessionsList({ sessions }: SessionProps) {
                     {sessions.map((session) => (
                         <SessionCard
                             key={session.id}
-                            date={session.date}
-                            duration={session.duration}
-                            skill={session.skill}
-                            notes={session.notes}
+                            session={session}
                         />
                     ))}
                 </ul>
