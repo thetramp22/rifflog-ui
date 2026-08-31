@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import RecentSessions from "../components/sessions/RecentSessions"
 import { useAuth } from "../hooks/useAuth";
 import { type Statistic, type Stats } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
 import { type Session } from "../types/sessions";
 import { authenticatedFetch, apiSessionsToSessions, apiStatsToStats } from "../services/apiService";
+import SessionsList from "../components/sessions/SessionsList";
 
 const maxRecentSessions = 4
 
@@ -59,7 +59,10 @@ function Dashboard() {
                 <h2>Welcome, Scott</h2>
             </section>
             {stats !== null ? <Statistics statistics={statsToStatistics(stats)} /> : <p>loading statistics...</p>}
-            {sessions !== null ? <RecentSessions sessions={sessions} /> : <p>loading recent sessions...</p>}
+            <div className="heading">
+                <h2>Recent Sessions</h2>
+            </div>
+            {sessions !== null ? <SessionsList sessions={sessions} /> : <p>loading recent sessions...</p>}
         </main>
     )
 }
