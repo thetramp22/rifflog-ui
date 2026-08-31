@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import RecentSessions from "../components/sessions/RecentSessions"
 import { useAuth } from "../hooks/useAuth";
-import { type Statistic, type Stats, type ApiStats } from "../types/statistics";
+import { type Statistic, type Stats } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
 import { type Session } from "../types/sessions";
-import { authenticatedFetch, apiSessionsToSessions } from "../services/apiService";
+import { authenticatedFetch, apiSessionsToSessions, apiStatsToStats } from "../services/apiService";
 
 const maxRecentSessions = 4
 
@@ -62,21 +62,6 @@ function Dashboard() {
             {sessions !== null ? <RecentSessions sessions={sessions} /> : <p>loading recent sessions...</p>}
         </main>
     )
-}
-
-function apiStatsToStats(apiStats: ApiStats) {
-    const result: Stats = {
-        totalMinutes: apiStats.total_minutes,
-        totalSessions: apiStats.total_sessions,
-        mostPracticedSkill: apiStats.most_practiced_skill
-            ? {
-                name: apiStats.most_practiced_skill.name,
-                totalMinutes: apiStats.most_practiced_skill.total_minutes
-            }
-            : null,
-        longestSession: apiStats.longest_session
-    }
-    return result
 }
 
 function statsToStatistics(stats: Stats) {

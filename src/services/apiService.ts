@@ -1,4 +1,5 @@
 import type { ApiSession, Session } from "../types/sessions"
+import type { ApiStats, Stats } from "../types/statistics"
 
 export async function authenticatedFetch(url: string, token: string, method: string, body?: string) {
     const options: RequestInit = {
@@ -24,6 +25,21 @@ export function apiSessionsToSessions(apiSessions: ApiSession[]) {
             notes: apiSession.notes
         }
         result.push(session)
+    }
+    return result
+}
+
+export function apiStatsToStats(apiStats: ApiStats) {
+    const result: Stats = {
+        totalMinutes: apiStats.total_minutes,
+        totalSessions: apiStats.total_sessions,
+        mostPracticedSkill: apiStats.most_practiced_skill
+            ? {
+                name: apiStats.most_practiced_skill.name,
+                totalMinutes: apiStats.most_practiced_skill.total_minutes
+            }
+            : null,
+        longestSession: apiStats.longest_session
     }
     return result
 }
