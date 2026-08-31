@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { type Statistic } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
 import { type Session, type ApiSession } from "../types/sessions";
+import authenticatedFetch from "../services/apiService";
 
 type ApiMostPracticedSkill = {
     name: string;
@@ -41,14 +42,7 @@ function Dashboard() {
             return
         }
         const getStats = async () => {
-            const config: RequestInit = {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-            }
-            const response = await fetch('https://api.rifflog.scottstarks.dev/api/practice-sessions/stats', config)
+            const response = await authenticatedFetch('https://api.rifflog.scottstarks.dev/api/practice-sessions/stats', token, 'GET')
 
             if (!response.ok) {
                 console.log("User is not Authorized")
@@ -68,14 +62,7 @@ function Dashboard() {
             return
         }
         const getSessions = async () => {
-            const config: RequestInit = {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-            }
-            const response = await fetch('https://api.rifflog.scottstarks.dev/api/practice-sessions', config)
+            const response = await authenticatedFetch('https://api.rifflog.scottstarks.dev/api/practice-sessions', token, 'GET')
 
             if (!response.ok) {
                 console.log("User is not Authorized")
