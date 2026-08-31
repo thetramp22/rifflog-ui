@@ -3,8 +3,8 @@ import RecentSessions from "../components/sessions/RecentSessions"
 import { useAuth } from "../hooks/useAuth";
 import { type Statistic, type Stats, type ApiStats } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
-import { type Session, type ApiSession } from "../types/sessions";
-import authenticatedFetch from "../services/apiService";
+import { type Session } from "../types/sessions";
+import { authenticatedFetch, apiSessionsToSessions } from "../services/apiService";
 
 const maxRecentSessions = 4
 
@@ -45,8 +45,9 @@ function Dashboard() {
             }
 
             const data = await response.json()
-            const sessions: Session[] = apiSessionsToRecentSessions(data)
-            setSessions(sessions)
+            const sessions: Session[] = apiSessionsToSessions(data)
+            const recentSessions = sessions.slice(0, maxRecentSessions)
+            setSessions(recentSessions)
         }
         getSessions()
     }, [token])
@@ -99,22 +100,6 @@ function statsToStatistics(stats: Stats) {
             value: String(stats.longestSession) + " minutes"
         }
     ]
-    return result
-}
-
-function apiSessionsToRecentSessions(apiSessions: ApiSession[]) {
-    const recentApisessions = apiSessions.slice(0, maxRecentSessions)
-    const result: Session[] = []
-    for (const apiSession of recentApisessions) {
-        const session: Session = {
-            id: apiSession.session_id,
-            date: apiSession.practiced_at,
-            duration: apiSession.duration_minutes,
-            skill: apiSession.skill_name,
-            notes: apiSession.notes
-        }
-        result.push(session)
-    }
     return result
 }
 

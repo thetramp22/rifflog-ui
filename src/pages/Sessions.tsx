@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "../hooks/useAuth"
-import { type ApiSession, type Session } from "../types/sessions"
+import { type Session } from "../types/sessions"
 import SessionsList from "../components/sessions/SessionsList"
-import authenticatedFetch from "../services/apiService"
+import { authenticatedFetch, apiSessionsToSessions } from "../services/apiService"
 
 function Sessions() {
     const { token } = useAuth()
@@ -35,20 +35,4 @@ function Sessions() {
         </main>
     )
 }
-
-function apiSessionsToSessions(apiSessions: ApiSession[]) {
-    const result: Session[] = []
-    for (const apiSession of apiSessions) {
-        const session: Session = {
-            id: apiSession.session_id,
-            date: apiSession.practiced_at,
-            duration: apiSession.duration_minutes,
-            skill: apiSession.skill_name,
-            notes: apiSession.notes
-        }
-        result.push(session)
-    }
-    return result
-}
-
 export default Sessions
