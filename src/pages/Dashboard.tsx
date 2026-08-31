@@ -1,37 +1,12 @@
 import { useEffect, useState } from "react";
 import RecentSessions from "../components/sessions/RecentSessions"
 import { useAuth } from "../hooks/useAuth";
-import { type Statistic } from "../types/statistics";
+import { type Statistic, type Stats, type ApiStats } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
 import { type Session, type ApiSession } from "../types/sessions";
 import authenticatedFetch from "../services/apiService";
 
-type ApiMostPracticedSkill = {
-    name: string;
-    total_minutes: number;
-}
-
-type ApiStats = {
-    total_minutes: number;
-    total_sessions: number;
-    most_practiced_skill: ApiMostPracticedSkill | null;
-    longest_session: number;
-}
-
-type MostPracticedSkill = {
-    name: string;
-    totalMinutes: number;
-}
-
-type Stats = {
-    totalMinutes: number;
-    totalSessions: number;
-    mostPracticedSkill: MostPracticedSkill | null;
-    longestSession: number;
-}
-
 const maxRecentSessions = 4
-
 
 function Dashboard() {
     const { token } = useAuth()
