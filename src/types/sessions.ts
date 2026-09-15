@@ -15,3 +15,17 @@ export type ApiSession = {
     practiced_at: string;
     user_id: number;
 }
+
+export type AddSession = {
+    skillId: string;
+    durationMinutes: string;
+    practicedAt: string;
+    notes: string;
+}
+
+export type ApiAddSession = {
+    skill_id: number;
+    duration_minutes: number;
+    practiced_at: string;
+    notes: string;
+}

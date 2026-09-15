@@ -1,4 +1,4 @@
-import type { ApiSession, Session } from "../types/sessions"
+import type { AddSession, ApiAddSession, ApiSession, Session } from "../types/sessions"
 import type { ApiStats, Stats } from "../types/statistics"
 
 export async function authenticatedFetch(url: string, token: string, method: string, body?: string) {
@@ -11,6 +11,43 @@ export async function authenticatedFetch(url: string, token: string, method: str
         ...(body !== undefined && { body: body })
     }
     const response = await fetch(url, options)
+    return response
+}
+
+export async function fetchPracticeSessions(token: string) {
+    const response = await authenticatedFetch(
+        'https://api.rifflog.scottstarks.dev/api/practice-sessions',
+        token,
+        'GET')
+
+    if (!response.ok) {
+        console.log("User is not Authorized")
+        return null
+    }
+
+    const data = await response.json()
+    const sessions: Session[] = apiSessionsToSessions(data)
+    return sessions
+}
+
+export async function fetchSkills() {
+    const options: RequestInit = {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }
+    const response = await fetch("https://api.rifflog.scottstarks.dev/skills", options)
+    return response
+}
+
+export async function createPracticeSession(addSession: AddSession, token: string) {
+    const response = await authenticatedFetch(
+        "https://api.rifflog.scottstarks.dev/api/practice-sessions",
+        token,
+        "POST",
+        JSON.stringify(addSessionToApiAddSession(addSession))
+    )
     return response
 }
 
@@ -40,6 +77,16 @@ export function apiStatsToStats(apiStats: ApiStats) {
             }
             : null,
         longestSession: apiStats.longest_session
+    }
+    return result
+}
+
+export function addSessionToApiAddSession(addSession: AddSession) {
+    const result: ApiAddSession = {
+        skill_id: Number(addSession.skillId),
+        duration_minutes: Number(addSession.durationMinutes),
+        practiced_at: addSession.practicedAt,
+        notes: addSession.notes
     }
     return result
 }

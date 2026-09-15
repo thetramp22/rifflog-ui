@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useAuth } from "../hooks/useAuth"
-import { type Session } from "../types/sessions"
+import { type AddSession, type Session } from "../types/sessions"
 import SessionsList from "../components/sessions/SessionsList"
-import { authenticatedFetch, apiSessionsToSessions } from "../services/apiService"
+import { fetchSkills, createPracticeSession, fetchPracticeSessions } from "../services/apiService"
+import type { Skill } from "../types/skill"
 
 type SortField = "date" | "duration" | "skill"
 type SortDirection = "ascending" | "descending"
@@ -12,6 +13,18 @@ type SortConfig = {
 }
 
 const SORT_FIELD_OPTIONS = ['date', "duration", "skill"] as const;
+const SORT_DIRECTION_BY_DATE = [
+    { value: "ascending", label: "Oldest first" },
+    { value: "descending", label: "Newest first" }
+]
+const SORT_DIRECTION_BY_DURATION = [
+    { value: "ascending", label: "Shortest first" },
+    { value: "descending", label: "Longest first" }
+]
+const SORT_DIRECTION_BY_SKILL = [
+    { value: "ascending", label: "A → Z" },
+    { value: "descending", label: "Z → A" }
+]
 
 function assertNever(value: never): never {
     throw new Error(`Unexpected value: ${value}`)
@@ -31,39 +44,140 @@ function Sessions() {
             return
         }
         const getSessions = async () => {
-            const response = await authenticatedFetch('https://api.rifflog.scottstarks.dev/api/practice-sessions', token, 'GET')
-
-            if (!response.ok) {
-                console.log("User is not Authorized")
-                return
-            }
-
-            const data = await response.json()
-            const sessions: Session[] = apiSessionsToSessions(data)
+            const sessions = await fetchPracticeSessions(token)
             setSessions(sessions)
         }
         getSessions()
     }, [token])
 
+    const [skills, setSkills] = useState<Skill[] | null>(null)
+    useEffect(() => {
+        const getSkills = async () => {
+            const response = await fetchSkills()
+
+            if (!response.ok) {
+                console.log("Error getting skills")
+                return
+            }
+
+            const skills: Skill[] = await response.json()
+            setSkills(skills)
+        }
+        getSkills()
+    }, [])
+
     const sortedSessions = sortSessions(sessions, sort)
+    const directionOptions = getDirectionOptions(sort.field)
+
+    const [formSelectedSkill, setFormSelectedSkill] = useState<string>("")
+    const handleSelectedSkillChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setFormSelectedSkill(event.target.value)
+    }
+    const [formDuration, setFormDuration] = useState<string>("")
+    const handleDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setFormDuration(event.target.value)
+    }
+    const [formDate, setFormDate] = useState<string>(new Date().toISOString().split('T')[0])
+    const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setFormDate(event.target.value)
+    }
+    const [formNotes, setFormNotes] = useState<string>("")
+    const handleNotesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setFormNotes(event.target.value)
+    }
+
+    const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const addSession: AddSession = {
+            skillId: formSelectedSkill,
+            durationMinutes: formDuration,
+            practicedAt: formDate,
+            notes: formNotes
+        }
+        // TODO: validate form data before submitting
+        if (token === null) {
+            return
+        }
+        const response = await createPracticeSession(addSession, token)
+        if (!response.ok) {
+            console.log("User is not Authorized")
+            return
+        }
+        const data = await response.json()
+        console.log("Submitted Data:", data)
+
+        const sessions = await fetchPracticeSessions(token)
+        setSessions(sessions)
+    };
 
     return (
         <main className="sessions">
             <section className="heading">
                 <h1>Sessions</h1>
+                <section>
+                    <h2>Create new session</h2>
+                </section>
+                <form onSubmit={handleSubmit}>
+                    <label htmlFor="skill-select">Skill</label>
+                    <select id="skill-select" value={formSelectedSkill} onChange={handleSelectedSkillChange}>
+                        <option value="">Select a skill...</option>
+                        {skills?.map((option) => (
+                            <option key={option.id} value={option.id}>
+                                {option.name}
+                            </option>
+                        ))}
+                    </select>
+                    <label htmlFor="duration-input">Duration</label>
+                    <input
+                        id="duration-input"
+                        type="number"
+                        value={formDuration}
+                        onChange={handleDurationChange}
+                    />
+                    <label htmlFor="date-input">Date</label>
+                    <input
+                        id="date-input"
+                        type="date"
+                        value={formDate}
+                        onChange={handleDateChange}
+                    />
+                    <label htmlFor="notes-input">Notes</label>
+                    <input
+                        id="notes-input"
+                        type="text"
+                        value={formNotes}
+                        onChange={handleNotesChange}
+                    />
+                    <button type="submit">Add Session</button>
+                </form>
             </section>
-            <p>Sort by: </p>
-            <select
-                value={sort.field}
-                onChange={(e) => setSort({ ...sort, field: e.target.value as SortField })}
-            >
-                {SORT_FIELD_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                        {option}
-                    </option>
-                ))}
-            </select>
-            {sortedSessions !== null ? <SessionsList sessions={sortedSessions} /> : <p>loading sessions...</p>}
+
+            <section>
+                <h2>Sessions list</h2>
+                <p>Sort by: </p>
+                <select
+                    value={sort.field}
+                    onChange={(e) => setSort({ ...sort, field: e.target.value as SortField })}
+                >
+                    {SORT_FIELD_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                            {option}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    value={sort.direction}
+                    onChange={(e) => setSort({ ...sort, direction: e.target.value as SortDirection })}
+                >
+                    {directionOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+                {sortedSessions !== null ? <SessionsList sessions={sortedSessions} /> : <p>loading sessions...</p>}
+
+            </section>
         </main>
     )
 }
@@ -92,6 +206,20 @@ function getComparator(field: SortField) {
         case "skill":
             return (a: Session, b: Session) =>
                 a.skill.localeCompare(b.skill)
+
+        default:
+            return assertNever(field)
+    }
+}
+
+function getDirectionOptions(field: SortField) {
+    switch (field) {
+        case "date":
+            return SORT_DIRECTION_BY_DATE
+        case "duration":
+            return SORT_DIRECTION_BY_DURATION
+        case "skill":
+            return SORT_DIRECTION_BY_SKILL
 
         default:
             return assertNever(field)
