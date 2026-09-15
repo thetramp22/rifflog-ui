@@ -103,8 +103,6 @@ function Sessions() {
             console.log("User is not Authorized")
             return
         }
-        const data = await response.json()
-        console.log("Submitted Data:", data)
 
         const sessions = await fetchPracticeSessions(token)
         setSessions(sessions)

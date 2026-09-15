@@ -42,11 +42,13 @@ export async function fetchSkills() {
 }
 
 export async function createPracticeSession(addSession: AddSession, token: string) {
+    const body: string = JSON.stringify(addSessionToApiAddSession(addSession))
+    console.log("body", body)
     const response = await authenticatedFetch(
         "https://api.rifflog.scottstarks.dev/api/practice-sessions",
         token,
         "POST",
-        JSON.stringify(addSessionToApiAddSession(addSession))
+        body
     )
     return response
 }
@@ -82,10 +84,12 @@ export function apiStatsToStats(apiStats: ApiStats) {
 }
 
 export function addSessionToApiAddSession(addSession: AddSession) {
+    const dateObject: Date = new Date(addSession.practicedAt)
+    const isoString: string = dateObject.toISOString()
     const result: ApiAddSession = {
         skill_id: Number(addSession.skillId),
         duration_minutes: Number(addSession.durationMinutes),
-        practiced_at: addSession.practicedAt,
+        practiced_at: isoString,
         notes: addSession.notes
     }
     return result
