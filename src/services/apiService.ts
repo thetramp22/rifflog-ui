@@ -53,6 +53,15 @@ export async function createPracticeSession(addSession: AddSession, token: strin
     return response
 }
 
+export async function deletePracticeSession(id: number, token: string) {
+    const response = await authenticatedFetch(
+        "https://api.rifflog.scottstarks.dev/api/practice-sessions/" + id,
+        token,
+        "DELETE"
+    )
+    return response
+}
+
 export function apiSessionsToSessions(apiSessions: ApiSession[]) {
     const result: Session[] = []
     for (const apiSession of apiSessions) {
