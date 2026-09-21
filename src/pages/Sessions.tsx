@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useAuth } from "../hooks/useAuth"
 import { type AddSession, type Session } from "../types/sessions"
 import SessionsList from "../components/sessions/SessionsList"
-import { fetchSkills, createPracticeSession, fetchPracticeSessions } from "../services/apiService"
+import { fetchSkills, createPracticeSession, fetchPracticeSessions, deletePracticeSession } from "../services/apiService"
 import type { Skill } from "../types/skill"
 
 type SortField = "date" | "duration" | "skill"
@@ -86,27 +86,65 @@ function Sessions() {
         setFormNotes(event.target.value)
     }
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null>(null)
+
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const addSession: AddSession = {
-            skillId: formSelectedSkill,
-            durationMinutes: formDuration,
-            practicedAt: formDate,
-            notes: formNotes
+        setIsSubmitting(true)
+        setSubmitError(null)
+
+        try {
+            const addSession: AddSession = {
+                skillId: formSelectedSkill,
+                durationMinutes: formDuration,
+                practicedAt: formDate,
+                notes: formNotes
+            }
+            // TODO: validate form data before submitting
+            if (token === null) {
+                return
+            }
+            const response = await createPracticeSession(addSession, token)
+            if (!response.ok) {
+                setSubmitError("Unable to create session. Please try again.")
+                return
+            }
+
+            const sessions = await fetchPracticeSessions(token)
+            setSessions(sessions)
+            setFormSelectedSkill("")
+            setFormDuration("")
+            setFormDate(new Date().toISOString().split('T')[0])
+            setFormNotes("")
+        } finally {
+            setIsSubmitting(false)
         }
-        // TODO: validate form data before submitting
-        if (token === null) {
-            return
-        }
-        const response = await createPracticeSession(addSession, token)
-        if (!response.ok) {
-            console.log("User is not Authorized")
+    }
+
+    const [deleteError, setDeleteError] = useState<string | null>(null)
+
+    const handleDelete = async (idToDelete: number) => {
+        setDeleteError(null)
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this session?"
+        )
+
+        if (!confirmed) {
             return
         }
 
+        if (token === null) {
+            return
+        }
+        const response = await deletePracticeSession(idToDelete, token)
+        if (!response.ok) {
+            setDeleteError("Unable to delete session.")
+            return
+        }
         const sessions = await fetchPracticeSessions(token)
         setSessions(sessions)
-    };
+    }
 
     return (
         <main className="sessions">
@@ -117,7 +155,12 @@ function Sessions() {
                 </section>
                 <form onSubmit={handleSubmit}>
                     <label htmlFor="skill-select">Skill</label>
-                    <select id="skill-select" value={formSelectedSkill} onChange={handleSelectedSkillChange}>
+                    <select
+                        id="skill-select"
+                        value={formSelectedSkill}
+                        onChange={handleSelectedSkillChange}
+                        required
+                    >
                         <option value="">Select a skill...</option>
                         {skills?.map((option) => (
                             <option key={option.id} value={option.id}>
@@ -131,6 +174,8 @@ function Sessions() {
                         type="number"
                         value={formDuration}
                         onChange={handleDurationChange}
+                        required
+                        min={"1"}
                     />
                     <label htmlFor="date-input">Date</label>
                     <input
@@ -138,6 +183,7 @@ function Sessions() {
                         type="date"
                         value={formDate}
                         onChange={handleDateChange}
+                        required
                     />
                     <label htmlFor="notes-input">Notes</label>
                     <input
@@ -146,8 +192,9 @@ function Sessions() {
                         value={formNotes}
                         onChange={handleNotesChange}
                     />
-                    <button type="submit">Add Session</button>
+                    <button type="submit">{isSubmitting ? "Submitting..." : "Add Session"}</button>
                 </form>
+                {submitError && (<p>{submitError}</p>)}
             </section>
 
             <section>
@@ -173,8 +220,12 @@ function Sessions() {
                         </option>
                     ))}
                 </select>
-                {sortedSessions !== null ? <SessionsList sessions={sortedSessions} /> : <p>loading sessions...</p>}
-
+                {sortedSessions !== null ? <SessionsList
+                    sessions={sortedSessions}
+                    onDelete={handleDelete}
+                    deleteError={deleteError}
+                /> : <p>loading sessions...</p>
+                }
             </section>
         </main>
     )

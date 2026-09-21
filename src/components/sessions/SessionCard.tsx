@@ -1,12 +1,18 @@
 import type { Session } from "../../types/sessions"
 
 type SessionCardProps = {
-    session: Session
+    session: Session;
+    onDelete: (id: number) => void;
 }
 
-function SessionCard({ session }: SessionCardProps) {
+function SessionCard({ session, onDelete }: SessionCardProps) {
     return (
         <li className="session-card">
+            <button
+                onClick={() => onDelete(session.id)}
+            >
+                Delete
+            </button>
             <p>Date: {new Date(session.date).toLocaleDateString()}</p>
             <p>Duration: {session.duration}</p>
             <p>Skill: {session.skill}</p>
