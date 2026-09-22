@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useAuth } from "../hooks/useAuth"
 import { type AddSession, type Session } from "../types/sessions"
 import SessionsList from "../components/sessions/SessionsList"
-import { fetchSkills, createPracticeSession, fetchPracticeSessions, deletePracticeSession } from "../services/apiService"
+import { fetchSkills, createPracticeSession, fetchPracticeSessions, deletePracticeSession, updatePracticeSession } from "../services/apiService"
 import type { Skill } from "../types/skill"
 
 type SortField = "date" | "duration" | "skill"
@@ -101,7 +101,6 @@ function Sessions() {
                 practicedAt: formDate,
                 notes: formNotes
             }
-            // TODO: validate form data before submitting
             if (token === null) {
                 return
             }
@@ -124,7 +123,7 @@ function Sessions() {
 
     const [deleteError, setDeleteError] = useState<string | null>(null)
 
-    const handleDelete = async (idToDelete: number) => {
+    const onDelete = async (idToDelete: number) => {
         setDeleteError(null)
         const confirmed = window.confirm(
             "Are you sure you want to delete this session?"
@@ -140,6 +139,23 @@ function Sessions() {
         const response = await deletePracticeSession(idToDelete, token)
         if (!response.ok) {
             setDeleteError("Unable to delete session.")
+            return
+        }
+        const sessions = await fetchPracticeSessions(token)
+        setSessions(sessions)
+    }
+
+    const [updateError, setUpdateError] = useState<string | null>(null)
+
+    const onUpdate = async (idToUpdate: number, addsession: AddSession) => {
+        setUpdateError(null)
+
+        if (token === null) {
+            return
+        }
+        const response = await updatePracticeSession(idToUpdate, addsession, token)
+        if (!response.ok) {
+            setUpdateError("Unable to update session.")
             return
         }
         const sessions = await fetchPracticeSessions(token)
@@ -220,10 +236,13 @@ function Sessions() {
                         </option>
                     ))}
                 </select>
-                {sortedSessions !== null ? <SessionsList
+                {sortedSessions !== null && skills !== null ? <SessionsList
                     sessions={sortedSessions}
-                    onDelete={handleDelete}
+                    skills={skills}
+                    onDelete={onDelete}
                     deleteError={deleteError}
+                    onUpdate={onUpdate}
+                    updateError={updateError}
                 /> : <p>loading sessions...</p>
                 }
             </section>

@@ -2,6 +2,7 @@ export type Session = {
     id: number;
     date: string;
     duration: number;
+    skillId: number;
     skill: string;
     notes: string;
 }

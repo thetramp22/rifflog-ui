@@ -43,7 +43,6 @@ export async function fetchSkills() {
 
 export async function createPracticeSession(addSession: AddSession, token: string) {
     const body: string = JSON.stringify(addSessionToApiAddSession(addSession))
-    console.log("body", body)
     const response = await authenticatedFetch(
         "https://api.rifflog.scottstarks.dev/api/practice-sessions",
         token,
@@ -62,6 +61,17 @@ export async function deletePracticeSession(id: number, token: string) {
     return response
 }
 
+export async function updatePracticeSession(id: number, addSession: AddSession, token: string) {
+    const body: string = JSON.stringify(addSessionToApiAddSession(addSession))
+    const response = await authenticatedFetch(
+        "https://api.rifflog.scottstarks.dev/api/practice-sessions/" + id,
+        token,
+        "PUT",
+        body
+    )
+    return response
+}
+
 export function apiSessionsToSessions(apiSessions: ApiSession[]) {
     const result: Session[] = []
     for (const apiSession of apiSessions) {
@@ -69,6 +79,7 @@ export function apiSessionsToSessions(apiSessions: ApiSession[]) {
             id: apiSession.session_id,
             date: apiSession.practiced_at,
             duration: apiSession.duration_minutes,
+            skillId: apiSession.skill_id,
             skill: apiSession.skill_name,
             notes: apiSession.notes
         }
@@ -93,8 +104,10 @@ export function apiStatsToStats(apiStats: ApiStats) {
 }
 
 export function addSessionToApiAddSession(addSession: AddSession) {
-    const dateObject: Date = new Date(addSession.practicedAt)
-    const isoString: string = dateObject.toISOString()
+    const localDateStr = addSession.practicedAt
+    const [year, month, day] = localDateStr.split('-').map(Number)
+    const localDate = new Date(year, month - 1, day)
+    const isoString: string = localDate.toISOString()
     const result: ApiAddSession = {
         skill_id: Number(addSession.skillId),
         duration_minutes: Number(addSession.durationMinutes),
