@@ -4,6 +4,8 @@ import { type AddSession, type Session } from "../types/sessions"
 import SessionsList from "../components/sessions/SessionsList"
 import { fetchSkills, createPracticeSession, fetchPracticeSessions, deletePracticeSession, updatePracticeSession } from "../services/apiService"
 import type { Skill } from "../types/skill"
+import { AuthenticationError } from "../errors/AuthenticationError"
+import { SkillsError } from "../errors/SkillsError"
 
 type SortField = "date" | "duration" | "skill"
 type SortDirection = "ascending" | "descending"
@@ -31,7 +33,7 @@ function assertNever(value: never): never {
 }
 
 function Sessions() {
-    const { token } = useAuth()
+    const { token, logout } = useAuth()
 
     const [sort, setSort] = useState<SortConfig>({
         field: "date",
@@ -39,29 +41,53 @@ function Sessions() {
     })
 
     const [sessions, setSessions] = useState<Session[] | null>(null)
+    const [isLoadingSessions, setIsLoadingSessions] = useState(true)
+    const [sessionsError, setSessionsError] = useState<string | null>(null)
     useEffect(() => {
         if (token === null) {
             return
         }
         const getSessions = async () => {
-            const sessions = await fetchPracticeSessions(token)
-            setSessions(sessions)
+            setIsLoadingSessions(true)
+            setSessionsError(null)
+            try {
+                const sessions = await fetchPracticeSessions(token)
+                setSessions(sessions)
+            } catch (error) {
+                if (error instanceof AuthenticationError) {
+                    logout()
+                } else {
+                    console.error(error)
+                    setSessionsError("Unable to load sessions. Please try again later.")
+                }
+            } finally {
+                setIsLoadingSessions(false)
+            }
         }
         getSessions()
-    }, [token])
+    }, [token, logout])
 
     const [skills, setSkills] = useState<Skill[] | null>(null)
+    const [isLoadingSkills, setIsLoadingSkills] = useState(true)
+    const [skillsError, setSkillsError] = useState<string | null>(null)
     useEffect(() => {
         const getSkills = async () => {
-            const response = await fetchSkills()
-
-            if (!response.ok) {
-                console.log("Error getting skills")
-                return
+            setIsLoadingSkills(true)
+            setSkillsError(null)
+            try {
+                const response = await fetchSkills()
+                const skills: Skill[] = await response.json()
+                setSkills(skills)
+            } catch (error) {
+                if (error instanceof SkillsError) {
+                    setSkillsError("Unable to load skills. Please try again later.")
+                } else {
+                    console.error(error)
+                    setSkillsError("Unexpected Error")
+                }
+            } finally {
+                setIsLoadingSkills(false)
             }
-
-            const skills: Skill[] = await response.json()
-            setSkills(skills)
         }
         getSkills()
     }, [])
@@ -116,6 +142,13 @@ function Sessions() {
             setFormDuration("")
             setFormDate(new Date().toISOString().split('T')[0])
             setFormNotes("")
+        } catch (error) {
+            if (error instanceof AuthenticationError) {
+                logout()
+            } else {
+                console.error(error)
+                setSessionsError(submitError)
+            }
         } finally {
             setIsSubmitting(false)
         }
@@ -136,13 +169,22 @@ function Sessions() {
         if (token === null) {
             return
         }
-        const response = await deletePracticeSession(idToDelete, token)
-        if (!response.ok) {
-            setDeleteError("Unable to delete session.")
-            return
+        try {
+            const response = await deletePracticeSession(idToDelete, token)
+            if (!response.ok) {
+                setDeleteError("Unable to delete session.")
+                return
+            }
+            const sessions = await fetchPracticeSessions(token)
+            setSessions(sessions)
+        } catch (error) {
+            if (error instanceof AuthenticationError) {
+                logout()
+            } else {
+                console.error(error)
+                setSessionsError(deleteError)
+            }
         }
-        const sessions = await fetchPracticeSessions(token)
-        setSessions(sessions)
     }
 
     const [updateError, setUpdateError] = useState<string | null>(null)
@@ -153,13 +195,42 @@ function Sessions() {
         if (token === null) {
             return
         }
-        const response = await updatePracticeSession(idToUpdate, addsession, token)
-        if (!response.ok) {
-            setUpdateError("Unable to update session.")
-            return
+
+        try {
+            const response = await updatePracticeSession(idToUpdate, addsession, token)
+            if (!response.ok) {
+                setUpdateError("Unable to update session.")
+                return
+            }
+            const sessions = await fetchPracticeSessions(token)
+            setSessions(sessions)
+        } catch (error) {
+            if (error instanceof AuthenticationError) {
+                logout()
+            } else {
+                console.error(error)
+                setSessionsError(updateError)
+            }
         }
-        const sessions = await fetchPracticeSessions(token)
-        setSessions(sessions)
+    }
+
+    let sessionsDisplay
+
+    if (isLoadingSessions === true || isLoadingSkills === true) {
+        sessionsDisplay = <p>loading sessions...</p>
+    } else if (sessionsError !== null) {
+        sessionsDisplay = <p>{sessionsError}</p>
+    } else if (skillsError !== null) {
+        sessionsDisplay = <p>{skillsError}</p>
+    } else if (sortedSessions !== null && skills !== null) {
+        sessionsDisplay = <SessionsList
+            sessions={sortedSessions}
+            skills={skills}
+            onDelete={onDelete}
+            deleteError={deleteError}
+            onUpdate={onUpdate}
+            updateError={updateError}
+        />
     }
 
     return (
@@ -236,15 +307,7 @@ function Sessions() {
                         </option>
                     ))}
                 </select>
-                {sortedSessions !== null && skills !== null ? <SessionsList
-                    sessions={sortedSessions}
-                    skills={skills}
-                    onDelete={onDelete}
-                    deleteError={deleteError}
-                    onUpdate={onUpdate}
-                    updateError={updateError}
-                /> : <p>loading sessions...</p>
-                }
+                {sessionsDisplay}
             </section>
         </main>
     )

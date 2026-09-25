@@ -1,3 +1,5 @@
+import { AuthenticationError } from "../errors/AuthenticationError"
+import { SkillsError } from "../errors/SkillsError"
 import type { AddSession, ApiAddSession, ApiSession, Session } from "../types/sessions"
 import type { ApiStats, Stats } from "../types/statistics"
 
@@ -11,6 +13,9 @@ export async function authenticatedFetch(url: string, token: string, method: str
         ...(body !== undefined && { body: body })
     }
     const response = await fetch(url, options)
+    if (response.status === 401) {
+        throw new AuthenticationError()
+    }
     return response
 }
 
@@ -21,7 +26,7 @@ export async function fetchPracticeSessions(token: string) {
         'GET')
 
     if (!response.ok) {
-        console.log("User is not Authorized")
+        console.log("Unable to load your practice sessions. Please try again.")
         return null
     }
 
@@ -38,6 +43,9 @@ export async function fetchSkills() {
         }
     }
     const response = await fetch("https://api.rifflog.scottstarks.dev/skills", options)
+    if (!response.ok) {
+        throw new SkillsError()
+    }
     return response
 }
 
