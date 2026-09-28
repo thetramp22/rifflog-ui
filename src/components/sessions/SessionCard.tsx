@@ -2,14 +2,23 @@ import React, { useState } from "react";
 import type { AddSession, Session } from "../../types/sessions"
 import type { Skill } from "../../types/skill";
 
-type SessionCardProps = {
+type EditableCardProps = {
     session: Session;
+    editable: true;
     skills: Skill[];
     onDelete: (id: number) => void;
     onUpdate: (id: number, addSession: AddSession) => void;
 }
+type NonEditableCardProps = {
+    session: Session;
+    editable: false;
+}
+type SessionCardProps = EditableCardProps | NonEditableCardProps
 
-function SessionCard({ session, skills, onDelete, onUpdate }: SessionCardProps) {
+function SessionCard(props: SessionCardProps) {
+    const { session } = props
+
+
     const [isEditing, setIsEditing] = useState(false)
     const [editSkillId, setEditSkillId] = useState<string>(String(session.skillId))
     const handleSelectedSkillChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -26,6 +35,17 @@ function SessionCard({ session, skills, onDelete, onUpdate }: SessionCardProps) 
     const [editNotes, setEditNotes] = useState<string>(session.notes)
     const handleNotesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setEditNotes(event.target.value)
+    }
+
+    if (!props.editable) {
+        return (
+            <>
+                <p>Date: {new Date(session.date).toLocaleDateString()}</p>
+                <p>Duration: {session.duration}</p>
+                <p>Skill: {session.skill}</p>
+                <p>Notes: {session.notes}</p>
+            </>
+        )
     }
 
     const handleCancel = () => {
@@ -47,7 +67,7 @@ function SessionCard({ session, skills, onDelete, onUpdate }: SessionCardProps) 
         }
 
         setIsEditing(false)
-        onUpdate(session.id, addSession)
+        props.onUpdate(session.id, addSession)
     }
     return (
         <li className="session-card">
@@ -77,7 +97,7 @@ function SessionCard({ session, skills, onDelete, onUpdate }: SessionCardProps) 
                         required
                     >
                         <option value="">Select a skill...</option>
-                        {skills?.map((option) => (
+                        {props.skills.map((option) => (
                             <option key={option.id} value={option.id}>
                                 {option.name}
                             </option>
@@ -101,7 +121,7 @@ function SessionCard({ session, skills, onDelete, onUpdate }: SessionCardProps) 
                 <div>
                     <button onClick={() => setIsEditing(true)}>Edit</button>
                     <button
-                        onClick={() => onDelete(session.id)}
+                        onClick={() => props.onDelete(session.id)}
                     >
                         Delete
                     </button>

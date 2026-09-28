@@ -62,7 +62,11 @@ function Dashboard() {
             <div className="heading">
                 <h2>Recent Sessions</h2>
             </div>
-            {sessions !== null ? <SessionsList sessions={sessions} /> : <p>loading recent sessions...</p>}
+            {sessions !== null ?
+                <SessionsList
+                    sessions={sessions}
+                    editable={false}
+                /> : <p>loading recent sessions...</p>}
         </main>
     )
 }

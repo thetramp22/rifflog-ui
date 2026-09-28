@@ -2,16 +2,44 @@ import SessionCard from "./SessionCard";
 import { type AddSession, type Session } from "../../types/sessions"
 import type { Skill } from "../../types/skill";
 
-type SessionListProps = {
+type EditableListProps = {
     sessions: Session[];
+    editable: true;
     skills: Skill[]
     onDelete: (id: number) => void;
     deleteError: string | null;
     onUpdate: (id: number, addSession: AddSession) => void;
     updateError: string | null;
 }
+type NonEditableListProps = {
+    sessions: Session[];
+    editable: false;
+}
+type SessionsListProps = EditableListProps | NonEditableListProps
 
-function SessionsList({ sessions, skills, onDelete, deleteError, onUpdate, updateError }: SessionListProps) {
+function SessionsList(props: SessionsListProps) {
+    const { sessions, editable } = props
+
+    if (!editable) {
+        return (
+            <section className="sessions">
+                <div className="cards">
+                    <ul>
+                        {sessions.map((session) => (
+                            <SessionCard
+                                key={session.id}
+                                session={session}
+                                editable={editable}
+                            />
+                        ))}
+                    </ul>
+                </div>
+            </section>
+        )
+    }
+
+    const { skills, onDelete, deleteError, onUpdate, updateError } = props
+
     return (
         <section className="sessions">
             <div className="cards">
@@ -22,6 +50,7 @@ function SessionsList({ sessions, skills, onDelete, deleteError, onUpdate, updat
                         <SessionCard
                             key={session.id}
                             session={session}
+                            editable={editable}
                             skills={skills}
                             onDelete={onDelete}
                             onUpdate={onUpdate}

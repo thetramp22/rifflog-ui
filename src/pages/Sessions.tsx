@@ -225,6 +225,7 @@ function Sessions() {
     } else if (sortedSessions !== null && skills !== null) {
         sessionsDisplay = <SessionsList
             sessions={sortedSessions}
+            editable={true}
             skills={skills}
             onDelete={onDelete}
             deleteError={deleteError}
