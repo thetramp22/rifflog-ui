@@ -5,6 +5,7 @@ import Statistics from "../components/statistics/Statistics";
 import { type Session } from "../types/sessions";
 import { authenticatedFetch, apiSessionsToSessions, apiStatsToStats } from "../services/apiService";
 import SessionsList from "../components/sessions/SessionsList";
+import { Stack, Typography } from "@mui/material";
 
 const maxRecentSessions = 4
 
@@ -53,21 +54,37 @@ function Dashboard() {
     }, [token])
 
     return (
-        <main className="dashboard">
-            <section className="heading">
-                <h1>Dashboard</h1>
-                <h2>Welcome, Scott</h2>
-            </section>
-            {stats !== null ? <Statistics statistics={statsToStatistics(stats)} /> : <p>loading statistics...</p>}
-            <div className="heading">
-                <h2>Recent Sessions</h2>
-            </div>
-            {sessions !== null ?
-                <SessionsList
-                    sessions={sessions}
-                    editable={false}
-                /> : <p>loading recent sessions...</p>}
-        </main>
+        <Stack spacing={4}>
+            <Typography variant="h2" sx={{ textAlign: "center" }}>
+                Dashboard
+            </Typography>
+
+            <Stack spacing={2}>
+                <Typography variant="h4" sx={{ textAlign: "center" }}>
+                    Statistics
+                </Typography>
+                {stats !== null ?
+                    <Statistics statistics={statsToStatistics(stats)} /> :
+                    <Typography variant="body1">
+                        loading statistics...
+                    </Typography>
+                }
+            </Stack>
+
+            <Stack spacing={2}>
+                <Typography variant="h4" sx={{ textAlign: "center" }}>
+                    Recent Sessions
+                </Typography>
+                {sessions !== null ?
+                    <SessionsList
+                        sessions={sessions}
+                        editable={false}
+                    /> :
+                    <Typography variant="body1">
+                        loading recent sessions...
+                    </Typography>}
+            </Stack>
+        </Stack>
     )
 }
 
@@ -75,7 +92,7 @@ function statsToStatistics(stats: Stats) {
     const result: Statistic[] = [
         {
             name: "Total Practice Time",
-            value: String(stats.totalMinutes / 60) + " hours"
+            value: formatDuration(stats.totalMinutes)
         },
         {
             name: "Total Sessions",
@@ -93,6 +110,34 @@ function statsToStatistics(stats: Stats) {
         }
     ]
     return result
+}
+
+function formatDuration(totalMinutes: number) {
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+    let hoursLabel = "hours"
+    let minutesLabel = "minutes"
+
+    if (hours === 0 && minutes === 0) {
+        return "0 minutes"
+    }
+
+    if (hours === 1) {
+        hoursLabel = "hour"
+    }
+    if (minutes === 1) {
+        minutesLabel = "minute"
+    }
+
+    if (hours === 0) {
+        return minutes + " " + minutesLabel
+    }
+
+    if (minutes === 0) {
+        return hours + " " + hoursLabel
+    }
+
+    return String(hours) + " " + hoursLabel + " " + String(minutes) + " " + minutesLabel
 }
 
 export default Dashboard

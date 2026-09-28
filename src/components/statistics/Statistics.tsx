@@ -1,5 +1,6 @@
 import StatisticCard from "./StatisticCard";
 import { type Statistic } from "../../types/statistics";
+import { Grid } from "@mui/material";
 
 type StatisticsProps = {
     statistics: Statistic[];
@@ -7,18 +8,23 @@ type StatisticsProps = {
 
 function Statistics({ statistics }: StatisticsProps) {
     return (
-        <section className="statistics">
-            <div className="heading">
-                <h2>Statistics</h2>
-            </div>
-            <div className="cards">
-                <ul>
-                    {statistics.map((statistic) => (
-                        <StatisticCard key={statistic.name} name={statistic.name} value={statistic.value} />
-                    ))}
-                </ul>
-            </div>
-        </section>
+        <Grid
+            container
+            columnSpacing={2}
+            rowSpacing={2}
+            sx={{
+                alignItems: "stretch"
+            }}
+        >
+            {statistics.map((statistic) => (
+                <Grid key={statistic.name} size={{ xs: 12, sm: 6, md: 3 }}>
+                    <StatisticCard
+                        name={statistic.name}
+                        value={statistic.value}
+                    />
+                </Grid>
+            ))}
+        </Grid>
     )
 }
 

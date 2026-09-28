@@ -1,5 +1,6 @@
-import { Link } from 'react-router'
 import { useAuth } from '../../hooks/useAuth';
+import { Link as RouterLink } from 'react-router-dom';
+import { Box, Typography, Link, Button, Stack, Container } from '@mui/material';
 
 function Navbar() {
     const { user, logout } = useAuth()
@@ -22,27 +23,47 @@ function Navbar() {
     }
 
     return (
-        <>
-            <section className="navbar">
-                <div className="title">
-                    <h1>RiffLog</h1>
-                </div>
-                <div className="navbar-links">
-                    <ul>
-                        {navigationItems.map((item) => (
-                            <li key={item.id}>
-                                <Link to={item.url}>
-                                    {item.name}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div>
-                    {user !== null ? <div><p>{user.email}</p><button onClick={handleClick}>Logout</button></div> : <p>Not logged in</p>}
-                </div>
-            </section>
-        </>
+        <Container>
+            <Stack
+                component="section"
+                direction="row"
+                sx={{
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                }}
+            >
+                <Typography variant='h1'>
+                    RiffLog
+                </Typography>
+                <Stack direction={'row'} spacing={3}>
+                    {navigationItems.map((item) => (
+                        <Link
+                            key={item.id}
+                            component={RouterLink}
+                            to={item.url}
+                            underline='none'
+                            sx={{
+                                color: "text.primary",
+                                "&:hover": {
+                                    color: "secondary.main"
+                                }
+                            }}
+                        >
+                            {item.name}
+                        </Link>
+                    ))}
+                </Stack>
+                {user !== null ?
+                    <Stack direction={'row'} spacing={2}>
+                        <Typography variant='body1'>{user.email}</Typography>
+                        <Button variant="contained" onClick={handleClick}>Logout</Button>
+                    </Stack> :
+                    <Box>
+                        <Typography variant='body1'>Not logged in</Typography>
+                    </Box>
+                }
+            </Stack>
+        </Container>
     )
 }
 
