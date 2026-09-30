@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import type { AddSession, Session } from "../../types/sessions"
-import type { Skill } from "../../types/skill";
+import type { Skill } from "../../types/skill"
+import { Card, CardContent, Stack, Typography } from "@mui/material";
+import { formatDuration } from "../../utils/formatDuration";
+
 
 type EditableCardProps = {
     session: Session;
@@ -39,12 +42,36 @@ function SessionCard(props: SessionCardProps) {
 
     if (!props.editable) {
         return (
-            <>
-                <p>Date: {new Date(session.date).toLocaleDateString()}</p>
-                <p>Duration: {session.duration}</p>
-                <p>Skill: {session.skill}</p>
-                <p>Notes: {session.notes}</p>
-            </>
+            <Card sx={{
+                borderRadius: 4,
+                boxShadow: 2,
+                height: "100%"
+            }}>
+                <Stack
+                    direction={"row"}
+                    sx={{
+                        backgroundColor: "primary.main",
+                        justifyContent: "space-between",
+                        p: 1,
+                        pl: 2
+                    }}
+                >
+                    <Typography variant="h6">
+                        {session.skill}
+                    </Typography>
+                    <Typography variant="h6">
+                        {formatDuration(session.duration)}
+                    </Typography>
+                </Stack>
+                <CardContent>
+                    <Typography variant="body1">
+                        {new Date(session.date).toLocaleDateString()}
+                    </Typography>
+                    {session.notes !== "" && <Typography variant="body1">
+                        {session.notes}
+                    </Typography>}
+                </CardContent>
+            </Card>
         )
     }
 

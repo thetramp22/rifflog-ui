@@ -2,15 +2,16 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { type Statistic, type Stats } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
-import { type Session } from "../types/sessions";
-import { authenticatedFetch, apiSessionsToSessions, apiStatsToStats } from "../services/apiService";
-import SessionsList from "../components/sessions/SessionsList";
-import { Stack, Typography } from "@mui/material";
+import { authenticatedFetch, apiStatsToStats } from "../services/apiService";
+import { Grid, Stack, Typography } from "@mui/material";
+import { formatDuration } from "../utils/formatDuration";
+import SessionCard from "../components/sessions/SessionCard";
+import { usePracticeSessions } from "../hooks/usePracticeSessions";
 
 const maxRecentSessions = 4
 
 function Dashboard() {
-    const { token } = useAuth()
+    const { token, logout } = useAuth()
 
     const [stats, setStats] = useState<Stats | null>(null)
     useEffect(() => {
@@ -32,26 +33,43 @@ function Dashboard() {
         getStats()
     }, [token])
 
-    const [sessions, setSessions] = useState<Session[] | null>(null)
-    useEffect(() => {
-        if (token === null) {
-            return
-        }
-        const getSessions = async () => {
-            const response = await authenticatedFetch('https://api.rifflog.scottstarks.dev/api/practice-sessions', token, 'GET')
+    const { sessions, isLoadingSessions, sessionsError } = usePracticeSessions({ token, logout })
+    let sessionsDisplay
 
-            if (!response.ok) {
-                console.log("User is not Authorized")
-                return
-            }
-
-            const data = await response.json()
-            const sessions: Session[] = apiSessionsToSessions(data)
-            const recentSessions = sessions.slice(0, maxRecentSessions)
-            setSessions(recentSessions)
-        }
-        getSessions()
-    }, [token])
+    if (isLoadingSessions) {
+        sessionsDisplay = (
+            <Typography variant="body1">
+                loading recent sessions...
+            </Typography>
+        )
+    } else if (sessionsError !== null) {
+        sessionsDisplay = (
+            <Typography variant="body1">
+                Error loading sessions
+            </Typography>
+        )
+    } else if (sessions !== null) {
+        const recentSessions = sessions.slice(0, maxRecentSessions)
+        sessionsDisplay = (
+            <Grid
+                container
+                columnSpacing={2}
+                rowSpacing={2}
+                sx={{
+                    alignItems: "stretch"
+                }}
+            >
+                {recentSessions.map((session) => (
+                    <Grid key={session.id} size={{ xs: 12, md: 6 }}>
+                        <SessionCard
+                            session={session}
+                            editable={false}
+                        />
+                    </Grid>
+                ))}
+            </Grid>
+        )
+    }
 
     return (
         <Stack spacing={4}>
@@ -75,14 +93,7 @@ function Dashboard() {
                 <Typography variant="h4" sx={{ textAlign: "center" }}>
                     Recent Sessions
                 </Typography>
-                {sessions !== null ?
-                    <SessionsList
-                        sessions={sessions}
-                        editable={false}
-                    /> :
-                    <Typography variant="body1">
-                        loading recent sessions...
-                    </Typography>}
+                {sessionsDisplay}
             </Stack>
         </Stack>
     )
@@ -110,34 +121,6 @@ function statsToStatistics(stats: Stats) {
         }
     ]
     return result
-}
-
-function formatDuration(totalMinutes: number) {
-    const hours = Math.floor(totalMinutes / 60)
-    const minutes = totalMinutes % 60
-    let hoursLabel = "hours"
-    let minutesLabel = "minutes"
-
-    if (hours === 0 && minutes === 0) {
-        return "0 minutes"
-    }
-
-    if (hours === 1) {
-        hoursLabel = "hour"
-    }
-    if (minutes === 1) {
-        minutesLabel = "minute"
-    }
-
-    if (hours === 0) {
-        return minutes + " " + minutesLabel
-    }
-
-    if (minutes === 0) {
-        return hours + " " + hoursLabel
-    }
-
-    return String(hours) + " " + hoursLabel + " " + String(minutes) + " " + minutesLabel
 }
 
 export default Dashboard

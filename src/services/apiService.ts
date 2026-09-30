@@ -26,8 +26,7 @@ export async function fetchPracticeSessions(token: string) {
         'GET')
 
     if (!response.ok) {
-        console.log("Unable to load your practice sessions. Please try again.")
-        return null
+        throw new Error("Unable to load practice sessions")
     }
 
     const data = await response.json()
