@@ -6,6 +6,7 @@ import { fetchSkills } from "../services/apiService"
 import type { Skill } from "../types/skill"
 import { SkillsError } from "../errors/SkillsError"
 import { usePracticeSessions } from "../hooks/usePracticeSessions"
+import { TextField, FormControl, InputLabel, MenuItem, Select, Button, Stack, Typography, type SelectChangeEvent } from "@mui/material"
 
 type SortField = "date" | "duration" | "skill"
 type SortDirection = "ascending" | "descending"
@@ -78,7 +79,7 @@ function Sessions() {
     const directionOptions = getDirectionOptions(sort.field)
 
     const [formSelectedSkill, setFormSelectedSkill] = useState<string>("")
-    const handleSelectedSkillChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleSelectedSkillChange = (event: SelectChangeEvent) => {
         setFormSelectedSkill(event.target.value)
     }
     const [formDuration, setFormDuration] = useState<string>("")
@@ -159,11 +160,11 @@ function Sessions() {
     let sessionsDisplay
 
     if (isLoadingSessions === true || isLoadingSkills === true) {
-        sessionsDisplay = <p>loading sessions...</p>
+        sessionsDisplay = <Typography variant="body1">loading sessions...</Typography>
     } else if (sessionsError !== null) {
-        sessionsDisplay = <p>{sessionsError.message}</p>
+        sessionsDisplay = <Typography variant="body1">{sessionsError.message}</Typography>
     } else if (skillsError !== null) {
-        sessionsDisplay = <p>{skillsError}</p>
+        sessionsDisplay = <Typography variant="body1">{skillsError}</Typography>
     } else if (sortedSessions !== null && skills !== null) {
         sessionsDisplay = <SessionsList
             sessions={sortedSessions}
@@ -177,82 +178,117 @@ function Sessions() {
     }
 
     return (
-        <main className="sessions">
-            <section className="heading">
-                <h1>Sessions</h1>
-                <section>
-                    <h2>Create new session</h2>
-                </section>
-                <form onSubmit={handleSubmit}>
-                    <label htmlFor="skill-select">Skill</label>
-                    <select
-                        id="skill-select"
-                        value={formSelectedSkill}
-                        onChange={handleSelectedSkillChange}
-                        required
-                    >
-                        <option value="">Select a skill...</option>
-                        {skills?.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
-                    <label htmlFor="duration-input">Duration</label>
-                    <input
-                        id="duration-input"
+        <Stack spacing={4}>
+            <Typography variant="h2" sx={{ textAlign: "center" }}>
+                Sessions
+            </Typography>
+            <Stack spacing={2}>
+                <Typography variant="h4" sx={{ textAlign: "center" }}>
+                    Create new session
+                </Typography>
+                <Stack
+                    spacing={2}
+                    component={"form"}
+                    onSubmit={handleSubmit}
+                    sx={{
+                        maxWidth: 600,
+                        width: "100%",
+                        alignSelf: "center"
+                    }}
+                >
+                    <FormControl fullWidth required>
+                        <InputLabel id="select-skill-label">Skill</InputLabel>
+                        <Select
+                            labelId="select-skill-label"
+                            id="select-skill"
+                            value={formSelectedSkill}
+                            label="Skill"
+                            onChange={handleSelectedSkillChange}
+                        >
+                            {skills?.map((option) => (
+                                <MenuItem key={option.id} value={option.id}>
+                                    {option.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <TextField
+                        label="Duration"
                         type="number"
                         value={formDuration}
                         onChange={handleDurationChange}
                         required
-                        min={"1"}
+                        slotProps={{
+                            htmlInput: {
+                                min: 1,
+                            }
+                        }}
                     />
-                    <label htmlFor="date-input">Date</label>
-                    <input
-                        id="date-input"
+                    <TextField
+                        label="Date"
                         type="date"
                         value={formDate}
                         onChange={handleDateChange}
                         required
                     />
-                    <label htmlFor="notes-input">Notes</label>
-                    <input
-                        id="notes-input"
-                        type="text"
+                    <TextField
+                        label="Notes"
                         value={formNotes}
                         onChange={handleNotesChange}
                     />
-                    <button type="submit">{isSubmitting ? "Submitting..." : "Add Session"}</button>
-                </form>
-                {submitError && (<p>{submitError}</p>)}
-            </section>
+                    <Button variant="contained" type="submit">{isSubmitting ? "Submitting..." : "Add Session"}</Button>
+                </Stack>
+                {submitError && (<Typography variant="body1">{submitError}</Typography>)}
+            </Stack>
 
-            <section>
-                <h2>Sessions list</h2>
-                <p>Sort by: </p>
-                <select
-                    value={sort.field}
-                    onChange={(e) => setSort({ ...sort, field: e.target.value as SortField })}
+            <Stack spacing={2}>
+                <Typography variant="h4" sx={{ textAlign: "center" }}>
+                    Sessions List
+                </Typography>
+                <Stack
+                    spacing={1}
+                    direction={"row"}
+                    sx={{ alignItems: "center" }}
                 >
-                    {SORT_FIELD_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    value={sort.direction}
-                    onChange={(e) => setSort({ ...sort, direction: e.target.value as SortDirection })}
-                >
-                    {directionOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
+                    <Typography variant="body1">
+                        Sort by:
+                    </Typography>
+                    <FormControl sx={{ minWidth: 120 }} size="small">
+                        <InputLabel id="select-field-label">Field</InputLabel>
+                        <Select
+                            labelId="select-field-label"
+                            id="select-field"
+                            value={sort.field}
+                            label="Field"
+                            onChange={(e) => setSort({ ...sort, field: e.target.value as SortField })}
+                        >
+                            {SORT_FIELD_OPTIONS.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl sx={{ minWidth: 120 }} size="small">
+                        <InputLabel id="select-direction-label">Direction</InputLabel>
+                        <Select
+                            labelId="select-direction-label"
+                            id="select-direction"
+                            value={sort.direction}
+                            label="Direction"
+                            onChange={(e) => setSort({ ...sort, direction: e.target.value as SortDirection })}
+                        >
+                            {directionOptions.map((option) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Stack>
                 {sessionsDisplay}
-            </section>
-        </main>
+            </Stack>
+        </Stack>
     )
 }
 

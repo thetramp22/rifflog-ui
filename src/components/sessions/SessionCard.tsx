@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import type { AddSession, Session } from "../../types/sessions"
 import type { Skill } from "../../types/skill"
-import { Card, CardContent, Stack, Typography } from "@mui/material";
+import { Card, CardContent, Stack, Typography, Button, FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent, TextField } from "@mui/material";
 import { formatDuration } from "../../utils/formatDuration";
 
 
@@ -24,7 +24,7 @@ function SessionCard(props: SessionCardProps) {
 
     const [isEditing, setIsEditing] = useState(false)
     const [editSkillId, setEditSkillId] = useState<string>(String(session.skillId))
-    const handleSelectedSkillChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleSelectedSkillChange = (event: SelectChangeEvent) => {
         setEditSkillId(event.target.value)
     }
     const [editDuration, setEditDuration] = useState<string>(String(session.duration))
@@ -97,68 +97,149 @@ function SessionCard(props: SessionCardProps) {
         props.onUpdate(session.id, addSession)
     }
     return (
-        <li className="session-card">
+        <Card sx={{
+            borderRadius: 4,
+            boxShadow: 2,
+            height: "100%"
+        }}>
             {isEditing ? (
-                <form onSubmit={handleSave}>
-                    <label htmlFor={`edit-date-input-${session.id}`}>Date</label>
-                    <input
-                        id={`edit-date-input-${session.id}`}
-                        type="date"
-                        value={editDate}
-                        onChange={handleDateChange}
-                        required
-                    />
-                    <label htmlFor={`edit-duration-input-${session.id}`}>Duration</label>
-                    <input
-                        id={`edit-duration-input-${session.id}`}
-                        type="number"
-                        value={editDuration}
-                        onChange={handleDurationChange}
-                        required
-                    />
-                    <label htmlFor={`edit-skill-select-${session.id}`}>Skill</label>
-                    <select
-                        id={`edit-skill-select-${session.id}`}
-                        value={editSkillId}
-                        onChange={handleSelectedSkillChange}
-                        required
+                <Stack
+                    component={"form"}
+                    onSubmit={handleSave}
+                >
+                    <Stack
+                        direction={"row"}
+                        sx={{
+                            backgroundColor: "primary.main",
+                            justifyContent: "space-between",
+                            p: 1,
+                            pl: 2
+                        }}
                     >
-                        <option value="">Select a skill...</option>
-                        {props.skills.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
-                    <label htmlFor={`edit-notes-input-${session.id}`}>Notes</label>
-                    <input
-                        id={`edit-notes-input-${session.id}`}
-                        type="text"
-                        value={editNotes}
-                        onChange={handleNotesChange}
-                    />
-                    <button type="submit">
-                        Save
-                    </button>
-                    <button type="button" onClick={handleCancel}>
-                        Cancel
-                    </button>
-                </form>
+                        <FormControl
+                            size="small"
+                            required
+                        >
+                            <InputLabel id={`edit-skill-select-label-${session.id}`}>Skill</InputLabel>
+                            <Select
+                                labelId={`edit-skill-select-label-${session.id}`}
+                                id={`edit-skill-select-${session.id}`}
+                                value={editSkillId}
+                                label="Skill"
+                                onChange={handleSelectedSkillChange}
+                            >
+                                {props.skills.map((option) => (
+                                    <MenuItem key={option.id} value={option.id}>
+                                        {option.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            label="Duration"
+                            type="number"
+                            size="small"
+                            value={editDuration}
+                            onChange={handleDurationChange}
+                            required
+                            slotProps={{
+                                htmlInput: {
+                                    min: 1,
+                                }
+                            }}
+                        />
+                    </Stack>
+                    <Stack
+                        spacing={1}
+                        sx={{
+                            justifyContent: "space-between",
+                            p: 1,
+                            pl: 2
+                        }}
+                    >
+                        <TextField
+                            label="Date"
+                            type="date"
+                            size="small"
+                            value={editDate}
+                            onChange={handleDateChange}
+                            required
+                        />
+                        <TextField
+                            label="Notes"
+                            value={editNotes}
+                            onChange={handleNotesChange}
+                        />
+                        <Stack
+                            spacing={1}
+                            direction={"row"}
+                            sx={{ justifyContent: "right" }}
+                        >
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                type="button"
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="secondary"
+                            >
+                                Save
+                            </Button>
+                        </Stack>
+                    </Stack>
+
+                </Stack>
             ) : (
-                <div>
-                    <button onClick={() => setIsEditing(true)}>Edit</button>
-                    <button
-                        onClick={() => props.onDelete(session.id)}
+                <Stack>
+                    <Stack
+                        direction={"row"}
+                        sx={{
+                            backgroundColor: "primary.main",
+                            justifyContent: "space-between",
+                            p: 1,
+                            pl: 2
+                        }}
                     >
-                        Delete
-                    </button>
-                    <p>Date: {new Date(session.date).toLocaleDateString()}</p>
-                    <p>Duration: {session.duration}</p>
-                    <p>Skill: {session.skill}</p>
-                    <p>Notes: {session.notes}</p>
-                </div>
+                        <Typography variant="h6">
+                            {session.skill}
+                        </Typography>
+                        <Typography variant="h6">
+                            {formatDuration(session.duration)}
+                        </Typography>
+                    </Stack>
+                    <CardContent>
+                        <Typography variant="body1">
+                            {new Date(session.date).toLocaleDateString()}
+                        </Typography>
+                        {session.notes !== "" && <Typography variant="body1">
+                            {session.notes}
+                        </Typography>}
+                        <Stack direction={"row"} spacing={1} sx={{ justifyContent: "right" }}>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                onClick={() => setIsEditing(true)}
+                            >
+                                Edit
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                onClick={() => props.onDelete(session.id)}
+                            >
+                                Delete
+                            </Button>
+                        </Stack>
+
+                    </CardContent>
+                </Stack>
             )}
-        </li>
+        </Card>
     )
 }
 

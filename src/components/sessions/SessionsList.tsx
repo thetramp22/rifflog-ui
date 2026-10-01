@@ -1,6 +1,7 @@
 import SessionCard from "./SessionCard";
 import { type AddSession, type Session } from "../../types/sessions"
 import type { Skill } from "../../types/skill";
+import { Grid, Typography } from "@mui/material";
 
 type EditableListProps = {
     sessions: Session[];
@@ -41,24 +42,34 @@ function SessionsList(props: SessionsListProps) {
     const { skills, onDelete, deleteError, onUpdate, updateError } = props
 
     return (
-        <section className="sessions">
-            <div className="cards">
-                {deleteError && (<p>{deleteError}</p>)}
-                {updateError && (<p>{updateError}</p>)}
-                <ul>
-                    {sessions.map((session) => (
-                        <SessionCard
-                            key={session.id}
-                            session={session}
-                            editable={editable}
-                            skills={skills}
-                            onDelete={onDelete}
-                            onUpdate={onUpdate}
-                        />
-                    ))}
-                </ul>
-            </div>
-        </section>
+        <Grid
+            container
+            columnSpacing={2}
+            rowSpacing={2}
+            sx={{ alignItems: "stretch" }}
+        >
+            {deleteError && (
+                <Grid size={12}>
+                    <Typography variant="body1" align="center">{deleteError}</Typography>
+                </Grid>
+            )}
+            {updateError && (
+                <Grid size={12}>
+                    <Typography variant="body1" align="center">{updateError}</Typography>
+                </Grid>
+            )}
+            {sessions.map((session) => (
+                <Grid key={session.id} size={{ xs: 12, md: 6 }}>
+                    <SessionCard
+                        session={session}
+                        editable={editable}
+                        skills={skills}
+                        onDelete={onDelete}
+                        onUpdate={onUpdate}
+                    />
+                </Grid>
+            ))}
+        </Grid>
     )
 }
 
