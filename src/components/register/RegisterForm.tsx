@@ -25,7 +25,6 @@ function RegisterForm() {
 
         try {
             await registerUser(email, password)
-            setMessage('Registration successful!')
             navigate('/')
         } catch (error) {
             setMessage('Registration failed')

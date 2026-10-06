@@ -5,7 +5,7 @@ function ProtectedRoute() {
     const { user, token } = useAuth()
 
     if (user === null || token === null) {
-        return <Navigate to="/login" />
+        return <Navigate to="/" />
     }
 
     return <Outlet />

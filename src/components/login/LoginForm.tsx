@@ -19,7 +19,6 @@ function LoginForm() {
 
         try {
             await login(email, password)
-            setMessage('Login successful!')
             navigate('/dashboard')
         } catch (error) {
             setMessage('Authentication failed')

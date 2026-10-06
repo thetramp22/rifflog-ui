@@ -1,8 +1,15 @@
 import { Box, Button, Stack, Typography } from "@mui/material"
 import LoginForm from "../components/login/LoginForm"
-import { Link } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
+import { useAuth } from "../hooks/useAuth"
 
 function Home() {
+    const { user, token } = useAuth()
+
+    if (user !== null && token !== null) {
+        return <Navigate to="/dashboard" replace />
+    }
+
     return (
         <Stack spacing={4}>
             <Typography
