@@ -25,10 +25,12 @@ function Navbar() {
         <Container>
             <Stack
                 component="section"
-                direction="row"
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
                 sx={{
                     justifyContent: "space-between",
-                    alignItems: "center"
+                    alignItems: "center",
+                    mb: { xs: 2, sm: 4 }
                 }}
             >
                 <Typography variant='h1'>
@@ -41,6 +43,7 @@ function Navbar() {
                             component={RouterLink}
                             to={item.url}
                             underline='none'
+                            variant='h6'
                             sx={{
                                 color: "text.primary",
                                 "&:hover": {
@@ -54,7 +57,12 @@ function Navbar() {
                 </Stack>
                 {user !== null ?
                     <Stack direction={'row'} spacing={2}>
-                        <Typography variant='body1'>{user.email}</Typography>
+                        <Typography
+                            variant='body1'
+                            sx={{ display: { xs: "none", sm: "block" } }}
+                        >
+                            {user.email}
+                        </Typography>
                         <Button variant="contained" onClick={handleClick}>Logout</Button>
                     </Stack> :
                     <Box>
