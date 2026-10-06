@@ -1,5 +1,6 @@
 import { AuthenticationError } from "../errors/AuthenticationError"
 import { SkillsError } from "../errors/SkillsError"
+import type { UserRegistrationData } from "../types/auth"
 import type { AddSession, ApiAddSession, ApiSession, Session } from "../types/sessions"
 import type { ApiStats, Stats } from "../types/statistics"
 
@@ -76,6 +77,23 @@ export async function updatePracticeSession(id: number, addSession: AddSession, 
         "PUT",
         body
     )
+    return response
+}
+
+export async function registerUser(email: string, password: string) {
+    const userData: UserRegistrationData = {
+        email: email,
+        password: password
+    }
+    const body: string = JSON.stringify(userData)
+    const options: RequestInit = {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: body
+    }
+    const response = await fetch("https://api.rifflog.scottstarks.dev/register", options)
     return response
 }
 

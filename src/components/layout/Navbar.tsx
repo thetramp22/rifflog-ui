@@ -6,7 +6,6 @@ function Navbar() {
     const { user, logout } = useAuth()
 
     const authenticatedNavigationItems = [
-        { id: 1, name: "Home", url: "/" },
         { id: 2, name: "Dashboard", url: "/dashboard" },
         { id: 3, name: "Sessions", url: "/sessions" }
     ]

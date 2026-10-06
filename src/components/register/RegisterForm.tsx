@@ -1,14 +1,14 @@
 import React, { useState } from "react"
-import { useAuth } from "../../hooks/useAuth"
+import { registerUser } from "../../services/apiService"
 import { Stack, TextField, Button } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 
-function LoginForm() {
+function RegisterForm() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
-    const { login } = useAuth()
 
     const navigate = useNavigate()
 
@@ -17,12 +17,18 @@ function LoginForm() {
         setLoading(true)
         setMessage('')
 
+        if (password !== confirmPassword) {
+            setMessage('Passwords do not match!')
+            setLoading(false)
+            return
+        }
+
         try {
-            await login(email, password)
-            setMessage('Login successful!')
-            navigate('/dashboard')
+            await registerUser(email, password)
+            setMessage('Registration successful!')
+            navigate('/')
         } catch (error) {
-            setMessage('Authentication failed')
+            setMessage('Registration failed')
             console.error('Error:', error)
         } finally {
             setLoading(false)
@@ -53,20 +59,27 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
             />
+            <TextField
+                label="Confirm Password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+            />
             <Button
                 variant="contained"
                 type="submit"
                 disabled={loading}
                 sx={{
-                    maxWidth: 200,
+                    maxWidth: 400,
                     alignSelf: "center"
                 }}
             >
-                {loading ? 'Logging in...' : 'Log in'}
+                {loading ? 'Registering...' : 'Register'}
             </Button>
             {message && <p>{message}</p>}
         </Stack>
     )
 }
 
-export default LoginForm
+export default RegisterForm
