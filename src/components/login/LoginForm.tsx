@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { useAuth } from "../../hooks/useAuth"
+import { Stack, TextField, Button } from "@mui/material"
 
 function LoginForm() {
     const [email, setEmail] = useState('')
@@ -25,36 +26,42 @@ function LoginForm() {
     }
 
     return (
-        <div>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="email">Email Address</label>
-                    <input
-                        id="email"
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input
-                        id="password"
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="********"
-                    />
-                </div>
-                <div>
-                    <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Submit'}</button>
-                </div>
-            </form>
+        <Stack
+            spacing={2}
+            component={"form"}
+            onSubmit={handleSubmit}
+            sx={{
+                maxWidth: 500,
+                width: "100%",
+                alignSelf: "center"
+            }}
+        >
+            <TextField
+                label="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+            />
+            <TextField
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+            />
+            <Button
+                variant="contained"
+                type="submit"
+                disabled={loading}
+                sx={{
+                    maxWidth: 300,
+                    alignSelf: "center"
+                }}
+            >
+                {loading ? 'Logging in...' : 'Submit'}
+            </Button>
             {message && <p>{message}</p>}
-        </div>
+        </Stack>
     )
 }
 

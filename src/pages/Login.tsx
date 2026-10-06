@@ -1,11 +1,14 @@
 import LoginForm from "../components/login/LoginForm"
+import { Stack, Typography } from "@mui/material"
 
 function Login() {
     return (
-        <main className="login">
-            <h1>Login</h1>
+        <Stack spacing={4}>
+            <Typography variant="h2" sx={{ textAlign: "center" }}>
+                Login
+            </Typography>
             <LoginForm />
-        </main>
+        </Stack>
     )
 }
 
