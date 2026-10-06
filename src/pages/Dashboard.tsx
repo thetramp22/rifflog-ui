@@ -7,6 +7,7 @@ import { Grid, Stack, Typography } from "@mui/material";
 import { formatDuration } from "../utils/formatDuration";
 import SessionCard from "../components/sessions/SessionCard";
 import { usePracticeSessions } from "../hooks/usePracticeSessions";
+import { AuthenticationError } from "../errors/AuthenticationError";
 
 const maxRecentSessions = 4
 
@@ -14,37 +15,65 @@ function Dashboard() {
     const { token, logout } = useAuth()
 
     const [stats, setStats] = useState<Stats | null>(null)
+    const [isLoadingStats, setIsLoadingStats] = useState(true)
+    const [statsError, setStatsError] = useState<string | null>(null)
     useEffect(() => {
         if (token === null) {
             return
         }
         const getStats = async () => {
-            const response = await authenticatedFetch('https://api.rifflog.scottstarks.dev/api/practice-sessions/stats', token, 'GET')
-
-            if (!response.ok) {
-                console.log("User is not Authorized")
-                return
+            setIsLoadingStats(true)
+            setStatsError(null)
+            try {
+                const response = await authenticatedFetch('https://api.rifflog.scottstarks.dev/api/practice-sessions/stats', token, 'GET')
+                const data = await response.json()
+                const stats: Stats = apiStatsToStats(data)
+                setStats(stats)
+            } catch (error) {
+                if (error instanceof AuthenticationError) {
+                    logout()
+                } else {
+                    console.error(error)
+                    setStatsError("Unexpected Error")
+                }
+            } finally {
+                setIsLoadingStats(false)
             }
-
-            const data = await response.json()
-            const stats: Stats = apiStatsToStats(data)
-            setStats(stats)
         }
         getStats()
-    }, [token])
+    }, [token, logout])
+    let statsDisplay
+
+    if (isLoadingStats) {
+        statsDisplay = (
+            <Typography variant="body1" sx={{ textAlign: "center" }}>
+                loading stats...
+            </Typography>
+        )
+    } else if (statsError !== null) {
+        statsDisplay = (
+            <Typography variant="body1" sx={{ textAlign: "center" }}>
+                Error loading stats
+            </Typography>
+        )
+    } else if (stats !== null) {
+        statsDisplay = (
+            <Statistics statistics={statsToStatistics(stats)} />
+        )
+    }
 
     const { sessions, isLoadingSessions, sessionsError } = usePracticeSessions({ token, logout })
     let sessionsDisplay
 
     if (isLoadingSessions) {
         sessionsDisplay = (
-            <Typography variant="body1">
+            <Typography variant="body1" sx={{ textAlign: "center" }}>
                 loading recent sessions...
             </Typography>
         )
     } else if (sessionsError !== null) {
         sessionsDisplay = (
-            <Typography variant="body1">
+            <Typography variant="body1" sx={{ textAlign: "center" }}>
                 Error loading sessions
             </Typography>
         )
@@ -81,12 +110,7 @@ function Dashboard() {
                 <Typography variant="h4" sx={{ textAlign: "center" }}>
                     Statistics
                 </Typography>
-                {stats !== null ?
-                    <Statistics statistics={statsToStatistics(stats)} /> :
-                    <Typography variant="body1">
-                        loading statistics...
-                    </Typography>
-                }
+                {statsDisplay}
             </Stack>
 
             <Stack spacing={2}>
@@ -112,12 +136,12 @@ function statsToStatistics(stats: Stats) {
         {
             name: "Most Practiced Skill",
             value: stats.mostPracticedSkill
-                ? stats.mostPracticedSkill.name + " for " + stats.mostPracticedSkill.totalMinutes + " minutes"
+                ? stats.mostPracticedSkill.name + " for " + formatDuration(stats.mostPracticedSkill.totalMinutes)
                 : "No sessions yet"
         },
         {
             name: "Longest Session",
-            value: String(stats.longestSession) + " minutes"
+            value: formatDuration(stats.longestSession)
         }
     ]
     return result

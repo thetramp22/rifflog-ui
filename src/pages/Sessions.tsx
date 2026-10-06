@@ -166,15 +166,25 @@ function Sessions() {
     } else if (skillsError !== null) {
         sessionsDisplay = <Typography variant="body1">{skillsError}</Typography>
     } else if (sortedSessions !== null && skills !== null) {
-        sessionsDisplay = <SessionsList
-            sessions={sortedSessions}
-            editable={true}
-            skills={skills}
-            onDelete={onDelete}
-            deleteError={deleteError}
-            onUpdate={onUpdate}
-            updateError={updateError}
-        />
+        if (sortedSessions.length === 0) {
+            sessionsDisplay = <Typography
+                variant="h6"
+                sx={{ textAlign: "center" }}
+            >
+                No sessions logged yet. Let's practice!
+            </Typography>
+        } else {
+            sessionsDisplay = <SessionsList
+                sessions={sortedSessions}
+                editable={true}
+                skills={skills}
+                onDelete={onDelete}
+                deleteError={deleteError}
+                onUpdate={onUpdate}
+                updateError={updateError}
+            />
+        }
+
     }
 
     return (
