@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { type Statistic, type Stats } from "../types/statistics";
 import Statistics from "../components/statistics/Statistics";
-import { authenticatedFetch, apiStatsToStats } from "../services/apiService";
+import { fetchStats } from "../services/apiService";
 import { Grid, Stack, Typography } from "@mui/material";
 import { formatDuration } from "../utils/formatDuration";
 import SessionCard from "../components/sessions/SessionCard";
@@ -25,9 +25,7 @@ function Dashboard() {
             setIsLoadingStats(true)
             setStatsError(null)
             try {
-                const response = await authenticatedFetch('https://api.rifflog.scottstarks.dev/api/practice-sessions/stats', token, 'GET')
-                const data = await response.json()
-                const stats: Stats = apiStatsToStats(data)
+                const stats: Stats = await fetchStats(token)
                 setStats(stats)
             } catch (error) {
                 if (error instanceof AuthenticationError) {

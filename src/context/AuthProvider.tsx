@@ -2,6 +2,8 @@ import { useState, type ReactNode } from "react"
 import type { LoginResponse, User } from "../types/auth"
 import AuthContext from "./AuthContext"
 
+const API_URL = import.meta.env.VITE_API_URL
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState(() => {
         const storedUserString = localStorage.getItem("user")
@@ -19,7 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [token, setToken] = useState(() => localStorage.getItem("token"))
 
     async function login(email: string, password: string) {
-        const response = await fetch('https://api.rifflog.scottstarks.dev/login', {
+        const response = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

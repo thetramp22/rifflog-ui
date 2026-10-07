@@ -4,6 +4,8 @@ import type { UserRegistrationData } from "../types/auth"
 import type { AddSession, ApiAddSession, ApiSession, Session } from "../types/sessions"
 import type { ApiStats, Stats } from "../types/statistics"
 
+const API_URL = import.meta.env.VITE_API_URL
+
 export async function authenticatedFetch(url: string, token: string, method: string, body?: string) {
     const options: RequestInit = {
         method: method,
@@ -22,7 +24,7 @@ export async function authenticatedFetch(url: string, token: string, method: str
 
 export async function fetchPracticeSessions(token: string) {
     const response = await authenticatedFetch(
-        'https://api.rifflog.scottstarks.dev/api/practice-sessions',
+        `${API_URL}/api/practice-sessions`,
         token,
         'GET')
 
@@ -42,17 +44,33 @@ export async function fetchSkills() {
             'Content-Type': 'application/json'
         }
     }
-    const response = await fetch("https://api.rifflog.scottstarks.dev/skills", options)
+    const response = await fetch(`${API_URL}/skills`, options)
     if (!response.ok) {
         throw new SkillsError()
     }
     return response
 }
 
+export async function fetchStats(token: string) {
+    const response = await authenticatedFetch(
+        `${API_URL}/api/practice-sessions/stats`,
+        token,
+        'GET'
+    )
+
+    if (!response.ok) {
+        throw new Error("Unable to load practice stats")
+    }
+
+    const data = await response.json()
+    const stats: Stats = apiStatsToStats(data)
+    return stats
+}
+
 export async function createPracticeSession(addSession: AddSession, token: string) {
     const body: string = JSON.stringify(addSessionToApiAddSession(addSession))
     const response = await authenticatedFetch(
-        "https://api.rifflog.scottstarks.dev/api/practice-sessions",
+        `${API_URL}/api/practice-sessions`,
         token,
         "POST",
         body
@@ -62,7 +80,7 @@ export async function createPracticeSession(addSession: AddSession, token: strin
 
 export async function deletePracticeSession(id: number, token: string) {
     const response = await authenticatedFetch(
-        "https://api.rifflog.scottstarks.dev/api/practice-sessions/" + id,
+        `${API_URL}/api/practice-sessions/` + id,
         token,
         "DELETE"
     )
@@ -72,7 +90,7 @@ export async function deletePracticeSession(id: number, token: string) {
 export async function updatePracticeSession(id: number, addSession: AddSession, token: string) {
     const body: string = JSON.stringify(addSessionToApiAddSession(addSession))
     const response = await authenticatedFetch(
-        "https://api.rifflog.scottstarks.dev/api/practice-sessions/" + id,
+        `${API_URL}/api/practice-sessions/` + id,
         token,
         "PUT",
         body
@@ -93,7 +111,10 @@ export async function registerUser(email: string, password: string) {
         },
         body: body
     }
-    const response = await fetch("https://api.rifflog.scottstarks.dev/register", options)
+    const response = await fetch(`${API_URL}/register`, options)
+    if (!response.ok) {
+        throw new Error('Could not register account')
+    }
     return response
 }
 
